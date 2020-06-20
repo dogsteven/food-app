@@ -59,7 +59,7 @@
                   <v-btn
                     text
                     color="orange"
-                    @click="addItemToCart(index)"
+                    @click="addItemToCart(item.id)"
                   >
                     Add to cart
                   </v-btn>
@@ -74,19 +74,18 @@
 </template>
 
 <script>
+import CartItem from '../../models/cart-item'
+
 export default {
   methods: {
-    addItemToCart(index) {
-      let existIndex = this.$store.state.carts.findIndex(item => item.index === index)
-      let exist = existIndex >= 0
-      if (exist === false) {
-        this.$store.commit('pushCartItem', {
-          index: index,
-          quantity: this.quantity
-        })
-      } else {
-        this.$store.commit('increaseCartItemQuantity', { index: existIndex, amount: this.quantity })
-      }
+    addItemToCart(foodID) {
+      let quantity = this.quantity
+      let existIndex = this.$store.state.carts.findIndex(cart => cart.foodID === foodID)
+      if (existIndex === -1) {
+        let newCartItem = new CartItem(foodID, quantity)
+        this.$store.commit('pushCartItem', newCartItem)
+      } else
+        this.$store.commit('increaseCartItemQuantity', { index: existIndex, amount: quantity })
     },
 
     selectItem(index) {

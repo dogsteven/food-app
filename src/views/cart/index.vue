@@ -15,16 +15,16 @@
       >
         
           <v-img
-            :src="$store.state.foods[index].photo"
+            :src="$store.state.foods[getFoodItemIndexByID(cart.foodID)].photo"
             max-height="130"
           >
           </v-img>
         
         <v-card-title>
-          {{ $store.state.foods[index].name }}
+          {{ $store.state.foods[getFoodItemIndexByID(cart.foodID)].name }}
         </v-card-title>
         <v-card-subtitle>
-          Số lượng: {{ cart.quantity }}, tổng giá: {{ $store.state.foods[index].price * cart.quantity }} VND
+          Số lượng: {{ cart.quantity }}, tổng giá: {{ $store.state.foods[getFoodItemIndexByID(cart.foodID)].price * cart.quantity }} VND
         </v-card-subtitle>
         <v-card-actions>
           <v-spacer></v-spacer>
@@ -61,6 +61,11 @@
 
 <script>
 export default {
+  methods: {
+    getFoodItemIndexByID(id) {
+      return this.$store.state.foods.findIndex(item => item.id === id)
+    }
+  },
   data: () => ({
     
   })
