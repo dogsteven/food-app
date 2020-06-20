@@ -22,7 +22,7 @@
             
           </v-img>
           <v-card-title
-            @click="selectedItem === index ? selectedItem = null : selectedItem = index"
+            @click="selectItem(index)"
           >
             {{ item.name }}
           </v-card-title>
@@ -37,6 +37,25 @@
                 {{ item.description }}
                 <v-card-actions>
                   <v-spacer></v-spacer>
+                  <v-card
+                    elevation="0"
+                  >
+                    <v-card-actions>
+                      <v-btn
+                        icon
+                        @click="quantity = quantity >= 2 ? quantity - 1 : 1"
+                      >
+                        <v-icon>mdi-minus</v-icon>
+                      </v-btn>
+                      {{ quantity }}
+                      <v-btn
+                        icon
+                        @click="quantity = quantity + 1"
+                      >
+                        <v-icon>mdi-plus</v-icon>
+                      </v-btn>
+                    </v-card-actions>
+                  </v-card>
                   <v-btn
                     text
                     color="orange"
@@ -58,17 +77,30 @@
 export default {
   methods: {
     addItemToCart(index) {
-      let exist = this.$store.state.carts.findIndex(item => item.index === index) >= 0
+      let existIndex = this.$store.state.carts.findIndex(item => item.index === index)
+      let exist = existIndex >= 0
       if (exist === false) {
         this.$store.commit('pushCartItem', {
           index: index,
-          quantity: 1
+          quantity: this.quantity
         })
+      } else {
+        this.$store.commit('increaseCartItemQuantity', { index: existIndex, amount: this.quantity })
+      }
+    },
+
+    selectItem(index) {
+      if (this.selectedItem === index) {
+        this.selectedItem = null
+      } else {
+        this.quantity = 1
+        this.selectedItem = index
       }
     }
   },
   data: () => ({
-    selectedItem: null
+    selectedItem: null,
+    quantity: 1
   })
 }
 </script>

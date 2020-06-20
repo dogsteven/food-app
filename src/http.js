@@ -1,7 +1,7 @@
 import axios from 'axios'
 
 let configuration = {
-    serverURL: "http://localhost:8000/api"
+        serverURL: "http://localhost/api"
 }
 
 export default {
@@ -18,7 +18,7 @@ export default {
          * @param {any?} data 
          * @param {import('axios').AxiosRequestConfig} config 
          */
-        post(route, data, config) {
+        post(route, data = null, config = null) {
             return axios.post(configuration.serverURL + route, data, config)
         },
 
@@ -27,7 +27,7 @@ export default {
          * @param {any?} data 
          * @param {import('axios').AxiosRequestConfig} config 
          */
-        put(route, data, config) {
+        put(route, data = null, config = null) {
             return axios.put(configuration.serverURL + route, data, config)
         },
 

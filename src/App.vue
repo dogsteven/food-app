@@ -53,14 +53,23 @@
 
       <v-btn
         text
+        small
       >
         <v-icon>mdi-magnify</v-icon>
       </v-btn>
+      
       <v-btn
         to="/cart"
         text
+        small
       >
-        <v-icon>mdi-cart</v-icon>
+        <v-badge
+          :color="$store.state.carts.length == 0 ? 'transparent' : 'error'"
+          :content="$store.state.carts.length"
+          overlap
+        >
+          <v-icon>mdi-cart</v-icon>
+        </v-badge>
       </v-btn>
     </v-app-bar>
 
@@ -79,6 +88,7 @@
 
 <script>
 import http from './http'
+import FoodItem from './models/food-item'
 
 export default {
   name: 'App',
@@ -102,24 +112,19 @@ export default {
 
   created() {
     let customer = JSON.parse(localStorage.getItem('customer'))
-    if (customer !== null) {
-      this.$store.commit('setCustomer', customer)
-    }
+    if (customer !== null)
+      if (('id' in customer) && ('info' in customer))
+        this.$store.commit('setCustomer', customer)
+      else {
+        localStorage.removeItem('customer')
+        this.$router.go('/sign-in-up')
+      }
 
     http.server.get('/food-item').then((response) => {
       let data = response.data
-      if (data != null) {
-        for (let key in data) {
-          this.$store.commit('pushFoodItem', {
-            id: key,
-            name: data[key].name,
-            price: data[key].price,
-            quantity: data[key].quantity,
-            categories: data[key].categories,
-            description: data[key].description,
-            photo: data[key].photo
-          })
-        }
+      for (let item of data) {
+        let foodItem = new FoodItem(item.id, item.vendorID, item.name, item.price, item.quantity, item.categories, item.description, item.photo)
+        this.$store.commit('pushFoodItem', foodItem)
       }
     })
   },

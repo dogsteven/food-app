@@ -26,16 +26,33 @@ export default new Vuex.Store({
       state.carts.push(cart)
     },
 
+    removeItemFromCart(state, index) {
+      state.carts.splice(index, 1)
+    },
+
+    increaseCartItemQuantity(state, { index, amount }) {
+      if (amount <= 0)
+        return
+      state.carts[index].quantity += amount
+    },
+
+    decreaseCartItemQuantity(state, { index, amount }) {
+      if (amount <= 0)
+        return
+      if (state.carts[index].quantity > 1)
+        state.carts[index].quantity = state.carts[index].quantity - amount
+    },
+
     popCartItem(state, position) {
       state.carts.splice(position, 1)
     },
 
-    setCustomer(state, value) {
-      state.customer.id = value.id
-      state.customer.info.username = value.info.username
-      state.customer.info.firstname = value.info.firstname
-      state.customer.info.lastname = value.info.lastname
-      state.customer.info.email = value.info.email
+    setCustomer(state, { id, info }) {
+      state.customer.id = id
+      state.customer.info.username = info.username
+      state.customer.info.firstname = info.firstname
+      state.customer.info.lastname = info.lastname
+      state.customer.info.email = info.email
     }
   },
   actions: {
