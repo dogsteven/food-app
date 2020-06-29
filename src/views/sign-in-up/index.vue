@@ -1,30 +1,34 @@
 <template>
   <v-container
     id="sign-in-up-container"
+    fill-height
   >
-    
+  <v-row align="center">
+    <v-flex px-2>
       <v-card
         class="mx-auto"
         max-width="500"
+        elevation="2"
       >
         <v-img
           max-height="200"
-          src="../../assets/sign-in-wallpaper.png"
+          src="../../assets/sign-in-wallpaper.jpg"
+          class="align-end white--text"
         >
         </v-img>
 
       
         <v-card-title>
           <v-tabs
-            color="brown"
+            color="orange"
             fixed-tabs
             v-model="tab"
           >
             <v-tab>
-              Sign In
+              Login<v-spacer></v-spacer>
             </v-tab>
             <v-tab>
-              Sign Up
+              <v-spacer></v-spacer>Register
             </v-tab>
           </v-tabs>
         </v-card-title>
@@ -34,17 +38,21 @@
           class="pa-5"
         >
           <v-text-field
-            color="brown"
+            color="orange"
             v-model="username"
+            solo
             label="Username"
+            prepend-inner-icon="mdi-account"
           >
           </v-text-field>
           <v-text-field
-            color="brown"
+            color="orange"
             v-model="password"
+            solo
             label="Password"
             type="password"
             :rules="[requireSixCharacters]"
+            prepend-inner-icon="mdi-lock"
           >
           </v-text-field>
           <v-expand-transition>
@@ -52,31 +60,39 @@
             v-show="tab === 1"
           >
             <v-text-field
-              color="brown"
+              color="orange"
               v-model="repassword"
+              solo
               label="Confirm password"
               type="password"
               :rules="[requireSixCharacters, isEqualToPassword]"
+              prepend-inner-icon="mdi-lock"
             >
 
             </v-text-field>
             <v-text-field
-              color="brown"
+              color="orange"
               v-model="firstname"
-              label="Firstanme"
+              solo
+              label="First name"
+              prepend-inner-icon="mdi-account"
             >
             </v-text-field>
             <v-text-field
-              color="brown"
+              color="orange"
               v-model="lastname"
-              label="Lastname"
+              solo
+              label="Last name"
+              prepend-inner-icon="mdi-account"
             >
             </v-text-field>
             <v-text-field
-              color="brown"
+              color="orange"
               v-model="email"
+              solo
               label="Email"
               :rules="[isEmail]"
+              prepend-inner-icon="mdi-mail"
             >
             </v-text-field>
           </div>
@@ -86,8 +102,9 @@
         <v-card-actions>
           <v-btn
             block
-            color="brown"
-            text
+            color="orange"
+            width="100"
+            dark
             @click="SignInOrSignUp"
           >
             {{ tab == 0 ? "Sign in" : "Sign up" }}
@@ -95,13 +112,13 @@
         </v-card-actions>
       </v-card>
       <v-snackbar
-        v-model="isSignInFailed"
-        timeout="2000"
-      >
+        v-model="isSignInUpFailed" 
+        timeout="2000">
+        {{ message }}
+      
         <template v-slot:action="{ attrs }">
-          Wrong username or password!
           <v-btn
-            color="ref"
+            color="red"
             text
             v-bind="attrs"
             @click="isSignInFailed = false"
@@ -110,6 +127,8 @@
           </v-btn>
         </template>
       </v-snackbar>
+    </v-flex>
+  </v-row>
   </v-container>
 </template>
 
@@ -136,23 +155,43 @@ export default {
     SignInOrSignUp() {
       let username = this.username
       let password = this.password
+      let repassword = this.repassword
       let firstname = this.firstname
       let lastname = this.lastname
       let email = this.email
       if (this.tab === 0) {
+        if (username.length === 0 || password.length === 0) {
+          this.message = "Please enter your username and password!"
+          this.isSignInUpFailed = true
+          return
+        }
         http.server.get('/customer/' + username + '/' + password).then((response) => {
           let data = response.data
           if (data !== null) {
             localStorage.setItem('customer', JSON.stringify(data))
             this.$store.commit('setCustomer', data)
             this.$router.go('/menu')
-          } else
-            this.isSignInFailed = true
+          } else {
+            this.message = "Wrong username or password!"
+            this.isSignInUpFailed = true
+          }
         })
       } else {
-        if (this.isEmail(email) === false)
+        var valid = true
+        if (username.length === 0 || password.length === 0 || repassword.length === 0 || firstname.length === 0 || lastname.length === 0 || email.length === 0)
+          valid = false
+        if (this.password !== this.repassword)
+          valid = false
+        if (this.isEmail(email) === false || email.length === 0)
+          valid = false
+        if (this.requireSixCharacters(password) === false)
+          valid = false
+        if (valid === false) {
+          this.message = "Wrong input! Try again!"
+          this.isSignInUpFailed = true
           return
-        let dataBody = {
+        }
+        var dataBody = {
           username: username,
           password: password,
           firstname: firstname,
@@ -164,8 +203,15 @@ export default {
         }
         http.server.post('/customer', dataBody, config).then((response) => {
           let data = response.data
-          if (data.id !== null) {
-            alert(data.id)
+          if (data !== null) {
+            dataBody.id = data.id
+            dataBody.registrationTokens = []
+            localStorage.setItem('customer', JSON.stringify(dataBody))
+            this.$store.commit('setCustomer', dataBody)
+            this.$router.go('/menu')
+          } else {
+            this.message = "This username is already exists!"
+            this.isSignInUpFailed = true
           }
         })
       }
@@ -179,15 +225,12 @@ export default {
     lastname: "",
     email: "",
     tab: 0,
-    isSignInFailed: false
+    isSignInUpFailed: false,
+    message: ""
   })
 }
 </script>
 
-<style>
-@import url('https://fonts.googleapis.com/css?family=Open%20Sans');
+<style scoped>
 
-#sign-in-up-container {
-  font-family: "Open Sans";
-}
 </style>
